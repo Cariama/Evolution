@@ -199,12 +199,16 @@ class Evol:
             
         #changement de comportement
         for entity in self.entities :
-            if entity[4] >= max([self.x,self.y])*0.25*entity[2] + 5 or self.t >= self.t_day*0.75 :
-                self.go_home(entity)
-                entity[5] = 1
-            elif self.t >= self.t_day*0.75 :
-                self.go_home(entity)
-                entity[5] = 2
+            if entity[5] == 0 :
+                if entity[4] >= max([self.x,self.y])*0.25*entity[2] + 5 or self.t >= self.t_day*0.75 :
+                    self.go_home(entity)
+                    entity[5] = 1
+                elif self.t >= self.t_day*0.75 :
+                    self.go_home(entity)
+                    entity[5] = 2
+            if entity[5] == 1 or entity[5] == 2 :
+                if entity[0][0] > self.x-1.1 and entity[0][0] < 0.1 and entity[0][1] > self.y - 1.1 and entity[0][1] < 0.1 :
+                    pass
 
     
     def __repr__(self):
