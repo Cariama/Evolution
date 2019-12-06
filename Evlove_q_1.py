@@ -138,23 +138,22 @@ class Evol:
         lenght = len(self.entities)
         for i, entity in enumerate(reversed(self.entities)) :
             if entity[0][0] < self.x-1.1 and entity[0][0] > 0.1 and entity[0][1] < self.y - 1.1 and entity[0][1] > 0 :
-                del(self.entities[lenght - i - 1])
-    def move(self):
+                del(self.entities[lenght - i - 1])    def move(self):
         #Déplacement de base
         for entity in self.entities:
             entity[0]=entity[0]+entity[2]*Evol.speedDirection(entity[1])
             Evol.anti_exit(self,entity)
             entity[4]-=0.25*entity[2]
-        #Si ils se touchent
-        for i1 in range(len(self.entities)):
-            for i2 in range(i1+1,len(self.entities)):
-                if Evol.dist(self.entities[i1][0],self.entities[i2][0])<self.entities[i1][3]+self.entities[i2][3]:
-                    print("boom")
-                    self.entities[i2][1],self.entities[i1][1]=self.entities[i1][1],self.entities[i2][1]
-                    self.entities[i1][0]=self.entities[i1][0]+self.entities[i1][2]*Evol.speedDirection(self.entities[i1][1])
-                    self.entities[i2][0]=self.entities[i2][0]+self.entities[i2][2]*Evol.speedDirection(self.entities[i2][1])
-                    Evol.anti_exit(self,self.entities[i1])
-                    Evol.anti_exit(self,self.entities[i2])
+#        #Si ils se touchent
+#        for i1 in range(len(self.entities)):
+#            for i2 in range(i1+1,len(self.entities)):
+#                if Evol.dist(self.entities[i1][0],self.entities[i2][0])<self.entities[i1][3]+self.entities[i2][3]:
+#                    print("boom")
+#                    self.entities[i2][1],self.entities[i1][1]=self.entities[i1][1],self.entities[i2][1]
+#                    self.entities[i1][0]=self.entities[i1][0]+self.entities[i1][2]*Evol.speedDirection(self.entities[i1][1])
+#                    self.entities[i2][0]=self.entities[i2][0]+self.entities[i2][2]*Evol.speedDirection(self.entities[i2][1])
+#                    Evol.anti_exit(self,self.entities[i1])
+#                    Evol.anti_exit(self,self.entities[i2])
         #modifier les direction
         for entity in self.entities:
             if entity[5] == 0 :
@@ -176,6 +175,7 @@ class Evol:
                 del self.food[y]
         #temps
         self.t=self.t+1
+        print(self.t)
         #mort
         i=0
         l=[]
@@ -189,13 +189,20 @@ class Evol:
         #repop des pommes
         if self.t >= self.t_day:
             print("day")
+            self.kill()
             self.t=0
             Evol.food_pop(self)
+            for entity in self.entities :
+                entity[5] = 0
             
         #changement de comportement
         for entity in self.entities :
-            if entity[4] >= 15*0.25*entity[2] or self.t >= self.t_day*0.75 :
+            if entity[4] >= max([self.x,self.y])*0.25*entity[2] + 5 or self.t >= self.t_day*0.75 :
                 self.go_home(entity)
+                entity[5] = 1
+            elif self.t >= self.t_day*0.75 :
+                self.go_home(entity)
+                entity[5] = 2
 
     
     def __repr__(self):
