@@ -15,8 +15,8 @@ class Evol:
         self.t_day=24 #temps d'une journée
         self.t=0 #temps actuel
         self.food_hitbox=0.125
-        self.entities=[[start_loc[i],Evol.base_direction(self,start_loc[i])+Evol.move_direction(), Evol.rand_speed(1),r_hitbox,rd.randint(1,10),str(i)]for i in range(n_entities)] 
-#        ((position),(angle de la direction),speed,rayon hitbox,énergie de base, repr)
+        self.entities=[[start_loc[i],Evol.base_direction(self,start_loc[i])+Evol.move_direction(), Evol.rand_speed(1),r_hitbox,rd.randint(1,10),0,str(i)]for i in range(n_entities)] 
+#        ((position),(angle de la direction),speed,rayon hitbox,énergie de base,comportement, repr)
 #        print(self.entities)
         
     def speedDirection(teta):
@@ -25,6 +25,12 @@ class Evol:
     def rand_speed(base):#défini les vitesse de base des créatures
         return abs(base+rd.gauss(0,0.7))
     
+    def dup(self,entity):
+#        (0(position),1(angle de la direction),(2)speed,(3)rayon hitbox,(4)énergie de base,(5)comportement, (-1)repr)
+        new_entity=(entity[0],Evol.base_direction(self,entity[0])+Evol.move_direction(),Evol.rand_speed(entity[2]),entity[4]/2,0,'@')
+        self.entities.append(new_entity)
+        entity[4]=entity[4]/2
+        
     def init_location(self):
         oy,ox,my,mx=0,0,0,0 #oy:y=0, ox:x=0, my:y=max, mx:x=max
         for i in range(self.n_entities):#distribue les creatures par coté
@@ -92,13 +98,27 @@ class Evol:
     def anti_exit(self,entity):#empêche les créatures de sortir du cadre
         if entity[0][0]<0:
             entity[0][0]=0
+            entity[1]=0
         elif entity[0][0]>self.x-1:
             entity[0][0]=self.x-1
+            entity[1]=np.pi
         if entity[0][1]<0:
             entity[0][1]=0
+            entity[1]=np.pi/2
         elif entity[0][1]>self.y-1:
             entity[0][1]=self.y-1
-            
+            entity[1]=-np.pi/2
+
+    def go_home(self,entity) :
+        entity[5] = 1
+        dist_up = entity[0][0]
+        dist_down = self.x - entity[0][0]
+        dist_right = self.y - entity[0][1]
+        dist_left = entity[0][1]
+        if (dist_up - dist_down)**2 <= (dist_right - dist_left)**2 :
+            entity[1] = (-1)**((dist_up - dist_down)<0)*np.pi/2
+        else :
+            entity[1] = ((dist_right - dist_left)>0)*np.pi
     def move(self):
         #Déplacement de base
         for entity in self.entities:
@@ -117,7 +137,10 @@ class Evol:
                     Evol.anti_exit(self,self.entities[i2])
         #modifier les direction
         for entity in self.entities:
-            entity[1]=entity[1]+Evol.move_direction()
+            if entity[5] == 0 :
+                if entity[4] >= 15*0.25*entity[2] or self.t >= self.t_day*0.75 :
+                    self.go_home(entity)
+                entity[1]=entity[1]+Evol.move_direction()
         #se nourrire
         l=[]    
         for y in reversed(range(len(self.food))):
@@ -136,21 +159,24 @@ class Evol:
         #mort
         i=0
         l=[]
-        print(len(self.entities))
         for entity in self.entities:
             if entity[4]<=0:
                 l.append(i)
                 print(entity[-1],":meurt")
             i+=1
         for ii in reversed(l):
-            del self.entities[ii]
-        print(len(self.entities))     
+            del self.entities[ii]    
         #repop des pommes
         if self.t >= self.t_day:
             print("day")
             self.t=0
             Evol.food_pop(self)
-                    
+            
+        #changement de comportement
+        for entity in self.entities :
+            if entity[4] >= 15*0.25*entity[2] or self.t >= self.t_day*0.75 :
+                self.go_home(entity)
+
     
     def __repr__(self):
         done=False
@@ -198,7 +224,3 @@ if __name__=="__main__":
             for entity in t.entities:
                 print(entity[-1],":",entity[4])
             print("turn:",c)
-#note: food en continu? comment? Voir plus tard
-#remplacer les assignation de coodonée avec random sample
-#question: Entity devrait-elle avoir une donnée sigma pour move_direction()?
-#bouffe->manger->energie->mort
