@@ -125,15 +125,20 @@ class Evol:
             entity[1]=-np.pi/2
 
     def go_home(self,entity) :
-        entity[5] = 1
-        dist_up = entity[0][0]
-        dist_down = self.x - entity[0][0]
-        dist_right = self.y - entity[0][1]
-        dist_left = entity[0][1]
-        if (dist_up - dist_down)**2 <= (dist_right - dist_left)**2 :
+        dist_up = entity[0][1]
+        dist_down = self.y - entity[0][1]
+        dist_right = self.x - entity[0][0]
+        dist_left = entity[0][0]
+        if (dist_up - dist_down)**2 >= (dist_right - dist_left)**2 :
             entity[1] = (-1)**((dist_up - dist_down)<0)*np.pi/2
         else :
             entity[1] = ((dist_right - dist_left)>0)*np.pi
+
+    def kill(self) :
+        lenght = len(self.entities)
+        for i, entity in enumerate(reversed(self.entities)) :
+            if entity[0][0] < self.x-1.1 and entity[0][0] > 0.1 and entity[0][1] < self.y - 1.1 and entity[0][1] > 0 :
+                del(self.entities[lenght - i - 1])
     def move(self):
         #Déplacement de base
         for entity in self.entities:
