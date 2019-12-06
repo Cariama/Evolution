@@ -11,17 +11,25 @@ class Evol:
         self.n_entities=n_entities
         self.food=Evol.food_init(self)#liste des coo des pommes
         start_loc=Evol.init_location(self)
+        sence=2.58
         r_hitbox=0.5
         self.t_day=24 #temps d'une journée
         self.t=0 #temps actuel
         self.food_hitbox=0.125
-        self.entities=[[start_loc[i],Evol.base_direction(self,start_loc[i])+Evol.move_direction(), Evol.rand_speed(1),r_hitbox,rd.randint(1,10),0,str(i)]for i in range(n_entities)] 
-#        ((position),(angle de la direction),speed,rayon hitbox,énergie de base,comportement, repr)
+        self.entities=[[start_loc[i],Evol.base_direction(self,start_loc[i])+Evol.move_direction(), Evol.rand_speed(1),r_hitbox,rd.randint(1,10),0,sence,str(i)]for i in range(n_entities)] 
+#        (0(position),1(angle de la direction),(2)speed,(3)rayon hitbox,(4)énergie de base,(5)comportement,(6)sense,(-1)repr)
 #        print(self.entities)
         
     def speedDirection(teta):
         return np.array([np.cos(teta),np.sin(teta)])
     
+    def dup(self,entity):
+#        (0(position),1(angle de la direction),(2)speed,(3)rayon hitbox,(4)énergie de base,(5)comportement, sense (-1)repr)
+        new_entity=(entity[0],Evol.base_direction(self,entity[0])+Evol.move_direction(),Evol.rand_speed(entity[2]),entity[4]/2,0,entity[6],'@')
+        self.entities.append(new_entity)
+        entity[4]=entity[4]/2
+        #!!!penser à rajouter les trucs
+        
     def rand_speed(base):#défini les vitesse de base des créatures
         return abs(base+rd.gauss(0,0.7))
     
@@ -68,7 +76,20 @@ class Evol:
     
     def moveToward(self,entity,coo):
         direction= coo-entity[0]/Evol.dist(entity[0],coo)
-        entity[0]=entity[0]+direction*min(Evol.dist(entity[0],coo)-entity[3]-self.food_hitbox,entity[2])
+        vitesse=min(Evol.dist(entity[0],coo)-entity[3]-self.food_hitbox,entity[2])
+        entity[0]=entity[0]+direction*vitesse
+        entity[4]=entity[4]-0.25*vitesse
+    
+    def scanForFood(self,entity):
+        vision=entity[6]
+        the_miam=False
+        for miam in self.food:
+            d=self.x**2+self.y**2
+            di=Evol.dist(miam,entity[0])+self.food_hitbox
+            if d<=vision and di<d:
+                d=di
+                the_miam=miam
+        return the_miam
     
     def move_direction():#modifie potentiellement l'angle de la direction
         if rd.random()<0.8:
