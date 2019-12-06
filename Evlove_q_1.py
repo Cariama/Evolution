@@ -139,11 +139,13 @@ class Evol:
         for i, entity in enumerate(reversed(self.entities)) :
             if entity[0][0] < self.x-1.1 and entity[0][0] > 0.1 and entity[0][1] < self.y - 1.1 and entity[0][1] > 0 :
                 del(self.entities[lenght - i - 1])    def move(self):
+    def move(self):
         #Déplacement de base
         for entity in self.entities:
-            entity[0]=entity[0]+entity[2]*Evol.speedDirection(entity[1])
-            Evol.anti_exit(self,entity)
-            entity[4]-=0.25*entity[2]
+            if entity[5] != 3 or entity[5] != 4 :
+                entity[0]=entity[0]+entity[2]*Evol.speedDirection(entity[1])
+                Evol.anti_exit(self,entity)
+                entity[4]-=0.25*entity[2]
 #        #Si ils se touchent
 #        for i1 in range(len(self.entities)):
 #            for i2 in range(i1+1,len(self.entities)):
