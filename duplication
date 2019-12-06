@@ -1,0 +1,5 @@
+ def dup(self,entity):
+#        (0(position),1(angle de la direction),(2)speed,(3)rayon hitbox,(4)énergie de base,(5)comportement, (-1)repr)
+        new_entity=(entity[0],Evol.base_direction(self,entity[0])+Evol.move_direction(),Evol.rand_speed(entity[2]),entity[4]/2,0,'@')
+        self.entities.append(new_entity)
+        entity[4]=entity[4]/2
