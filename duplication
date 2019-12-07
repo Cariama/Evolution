@@ -28,15 +28,18 @@
     def goForFood(self,entity):
         vision=entity[6]
         done=False
+        print("food?")
         for miam in self.food:
             d=self.x**2+self.y**2
             di=Evol.dist(miam,entity[0])+self.food_hitbox
-            if d<=vision and di<d:
+            if di<=vision and di<d:
+#                print("trouvé1")
                 d=di
                 the_miam=miam
                 done=True
         if done==True:
-            Evol.moveToward(entity,the_miam)
+            print("miam?")
+            Evol.moveToward(self,entity,the_miam)
         return done
         
    #Déplacement de base
