@@ -25,13 +25,28 @@
         entity[4]=entity[4]/2
         #!!!penser à rajouter les trucs
         
-    def scanForFood(self,entity):
+    def goForFood(self,entity):
         vision=entity[6]
-        the_miam=False
+        done=False
         for miam in self.food:
             d=self.x**2+self.y**2
             di=Evol.dist(miam,entity[0])+self.food_hitbox
             if d<=vision and di<d:
                 d=di
                 the_miam=miam
-        return the_miam
+                done=True
+        if done==True:
+            Evol.moveToward(entity,the_miam)
+        return done
+        
+   #Déplacement de base
+        for entity in self.entities:
+            if False:#gohome==True:
+                pass
+            elif Evol.goForFood(self,entity):
+                pass
+            else:    
+                entity[0]=entity[0]+entity[2]*Evol.speedDirection(entity[1])
+                Evol.anti_exit(self,entity)
+                entity[4]-=0.25*entity[2]
+        #Si ils se touchent
