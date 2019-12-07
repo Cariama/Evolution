@@ -129,10 +129,11 @@ class Evol:
         dist_down = self.y - entity[0][1]
         dist_right = self.x - entity[0][0]
         dist_left = entity[0][0]
-        if (dist_up - dist_down)**2 >= (dist_right - dist_left)**2 :
-            entity[1] = (-1)**((dist_up - dist_down)<0)*np.pi/2
-        else :
-            entity[1] = ((dist_right - dist_left)>0)*np.pi
+        list_ = [dist_right,dist_up,dist_left,dist_down]
+        for i in range(4) :
+            if list_[i] <= min(list_[:i]+list_[i+1:] :
+                entity[1] = np.pi*i
+            
 
     def kill(self) :
         lenght = len(self.entities)
