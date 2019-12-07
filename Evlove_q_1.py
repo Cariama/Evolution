@@ -131,7 +131,7 @@ class Evol:
         dist_left = entity[0][0]
         list_ = [dist_right,dist_up,dist_left,dist_down]
         for i in range(4) :
-            if list_[i] <= min(list_[:i]+list_[i+1:] :
+            if list_[i] <= min(list_[:i]+list_[i+1:]) :
                 entity[1] = np.pi*i
             
 
@@ -139,7 +139,7 @@ class Evol:
         lenght = len(self.entities)
         for i, entity in enumerate(reversed(self.entities)) :
             if entity[0][0] < self.x-1.1 and entity[0][0] > 0.1 and entity[0][1] < self.y - 1.1 and entity[0][1] > 0 :
-                del(self.entities[lenght - i - 1])    def move(self):
+                del(self.entities[lenght - i - 1])
     def move(self):
         #Déplacement de base
         for entity in self.entities:
