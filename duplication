@@ -13,8 +13,8 @@
 #        print(self.entities)
         
     def moveToward(self,entity,coo):
-        direction= coo-entity[0]/Evol.dist(entity[0],coo)
-        vitesse=min(Evol.dist(entity[0],coo)-entity[3]-self.food_hitbox,entity[2])
+        direction= (coo-entity[0])/Evol.dist(entity[0],coo)
+        vitesse=min(Evol.dist(entity[0],coo),entity[2])
         entity[0]=entity[0]+direction*vitesse
         entity[4]=entity[4]-0.25*vitesse
     
