@@ -125,14 +125,14 @@ class Evol:
             entity[1]=-np.pi/2
 
     def go_home(self,entity) :
-        dist_up = entity[0][1]
-        dist_down = self.y - entity[0][1]
-        dist_right = self.x - entity[0][0]
+        dist_up = self.y - 1 - entity[0][1]
+        dist_down = entity[0][1]
+        dist_right = self.x - 1 - entity[0][0]
         dist_left = entity[0][0]
         list_ = [dist_right,dist_up,dist_left,dist_down]
         for i in range(4) :
             if list_[i] <= min(list_[:i]+list_[i+1:]) :
-                entity[1] = np.pi*i
+                entity[1] = i*np.pi/2
             
 
     def kill(self) :
@@ -143,7 +143,7 @@ class Evol:
     def move(self):
         #Déplacement de base
         for entity in self.entities:
-            if entity[5] != 3 or entity[5] != 4 :
+            if entity[5] != 2 :
                 entity[0]=entity[0]+entity[2]*Evol.speedDirection(entity[1])
                 Evol.anti_exit(self,entity)
                 entity[4]-=0.25*entity[2]
@@ -197,6 +197,7 @@ class Evol:
             Evol.food_pop(self)
             for entity in self.entities :
                 entity[5] = 0
+                entity[4] -= entity[4]/2
             
         #changement de comportement
         for entity in self.entities :
@@ -204,12 +205,8 @@ class Evol:
                 if entity[4] >= max([self.x,self.y])*0.25*entity[2] + 5 or self.t >= self.t_day*0.75 :
                     self.go_home(entity)
                     entity[5] = 1
-                elif self.t >= self.t_day*0.75 :
-                    self.go_home(entity)
-                    entity[5] = 2
-            if entity[5] == 1 or entity[5] == 2 :
-                if entity[0][0] > self.x-1.1 and entity[0][0] < 0.1 and entity[0][1] > self.y - 1.1 and entity[0][1] < 0.1 :
-                    pass
+            if entity[5] == 1 and (entity[0][0] > self.x-1.1 or entity[0][0] < 0.1 or entity[0][1] > self.y - 1.1 or entity[0][1] < 0.1) :
+                entity[5] = 2
 
     
     def __repr__(self):
