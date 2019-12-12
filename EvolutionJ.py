@@ -11,21 +11,21 @@ class Evol:
         self.n_entities=n_entities
         self.food=Evol.food_init(self)#liste des coo des pommes
         start_loc=Evol.init_location(self)
-        sence=1
+        sence=[rd.uniform(0.5,2) for i in range(n_entities)]
         r_hitbox=0.5
         self.t_day=24 #temps d'une journée
         self.t=0 #temps actuel
         self.food_hitbox=0.125
-        self.entities=[[start_loc[i],Evol.base_direction(self,start_loc[i])+Evol.move_direction(), Evol.rand_speed(1),r_hitbox,rd.randint(1,10),0,sence,str(i)]for i in range(n_entities)] 
-#        (0(position),1(angle de la direction),(2)speed,(3)rayon hitbox,(4)énergie de base,(5)comportement,(6)sense,(-1)repr)
+        self.entities=[[start_loc[i],Evol.base_direction(self,start_loc[i])+Evol.move_direction(), Evol.rand_speed(1),r_hitbox,rd.randint(1,10),0,sence[i]]for i in range(n_entities)] 
+#        (0(position),1(angle de la direction),(2)speed,(3)rayon hitbox,(4)énergie de base,(5)comportement,(6)sense)
 #        print(self.entities[0])
      
     def dup(self,entity):
 #        (0(position),1(angle de la direction),(2)speed,(3)rayon hitbox,(4)énergie de base,(5)comportement, sense (-1)repr)
-        new_entity=[entity[0],Evol.base_direction(self,entity[0])+Evol.move_direction(),Evol.rand_speed(entity[2]),0.5,entity[4]/2,0,entity[6],'@']
+        new_entity=[entity[0],Evol.base_direction(self,entity[0])+Evol.move_direction(),Evol.rand_speed(entity[2]),0.5,entity[4]/2,0,entity[6]]
         self.entities.append(new_entity)
-        print("new",new_entity)
-        print(self.entities[-1])
+#        print("new",new_entity)
+#        print(self.entities[-1])
         entity[4]=entity[4]/2
         #!!!penser à rajouter les trucs
     
@@ -46,35 +46,36 @@ class Evol:
                 my+=1
             elif (i-1)%2==0:
                 mx+=1
-        free_oy=[np.array([float(xi),0]) for xi in range(0,self.x-1)]
-        free_ox=[np.array([0,float(yi)]) for yi in range(1,self.y-1)]
-        free_my=[np.array([float(xi),float(self.y-1)]) for xi in range(1,self.x-1)]
-        free_mx=[np.array([float(self.x-1),float(yi)]) for yi in range(1,self.y-2)]
-        return rd.sample(free_oy,oy)+rd.sample(free_ox,ox)+rd.sample(free_mx,mx)+rd.sample(free_my,my)
+#
+        oy_s=[np.array([rd.random()*self.x,0]) for i in range(oy)]
+        ox_s=[np.array([0,rd.random()*self.y]) for i in range(oy)]
+        my_s=[np.array([rd.random()*self.x,float(self.y-1)]) for i in range(oy)]
+        mx_s=[np.array([float(self.x-1),rd.random()*self.y]) for i in range(oy)]
+        return oy_s+ox_s+my_s+mx_s
     
     def food_init(self):#définit les emplacements de la nourritures
         l=[]
         for xi in range(1,self.x-1):
             for yi in range(1,self.y-1):
-                l.append(np.array([xi,yi]))
+                l.append(np.array([xi+rd.gauss(0,0.35),yi+rd.gauss(0,0.35)]))
         n_food=int(((self.x-2)*(self.y-2)/4)+0.5)
         return rd.sample(l,n_food)
     
     def isin(elem, liste):
         return np.array([(item == elem).all() for item in liste]).any()
 
-    def food_pop(self):
-        n_food2pop=int((len(self.food)/3)+0.5)
-        if n_food2pop==0 and self.food!=[]: n_food2pop=1
-#        print(n_food2pop)
-        l=[]
-        for xi in range(1,self.x-1):
-            for yi in range(1,self.y-1):
-                if Evol.isin(np.array([xi,yi]),self.food)==False:
-                    for entity in self.entities:
-                        if Evol.dist(entity[0],[xi,yi])> entity[3]+self.food_hitbox:
-                            l.append(np.array([xi,yi]))
-        self.food=self.food+rd.sample(l,min(len(l),n_food2pop))
+#    def food_pop(self):
+#        n_food2pop=int((len(self.food)/3)+0.5)
+#        if n_food2pop==0 and self.food!=[]: n_food2pop=1
+##        print(n_food2pop)
+#        l=[]
+#        for xi in range(1,self.x-1):
+#            for yi in range(1,self.y-1):
+#                if Evol.isin(np.array([xi,yi]),self.food)==False:
+#                    for entity in self.entities:
+#                        if Evol.dist(entity[0],[xi,yi])> entity[3]+self.food_hitbox:
+#                            l.append(np.array([xi,yi]))
+#        self.food=self.food+rd.sample(l,min(len(l),n_food2pop))
     
     def moveToward(self,entity,coo):
         direction= (coo-entity[0])/Evol.dist(entity[0],coo)
@@ -158,17 +159,18 @@ class Evol:
         for entity in self.entities:
             if entity[5]==2:
                 if self.t>=self.t_day and entity[4]>=6:
-                    print("crac")
+#                    print("crac")
                     Evol.dup(self,entity)
             elif entity[5]==1:
                 entity[0]=entity[0]+entity[2]*Evol.speedDirection(entity[1])
                 entity[4]-=0.25*entity[2]
+                Evol.anti_exit(self,entity)
             elif Evol.goForFood(self,entity):
 #                print("bah",entity[-1])
                 pass
             else:
 #                print("else")
-                print(entity[-1])
+#                print(entity[-1])
                 entity[0]=entity[0]+entity[2]*Evol.speedDirection(entity[1])
                 Evol.anti_exit(self,entity)
                 entity[4]-=0.25*entity[2]
@@ -197,15 +199,15 @@ class Evol:
                     d=di
                     ent=i
             if d<self.x**2+self.y**2:
-                print(self.entities[ent][-1],":miam")
-                self.entities[ent][4]+=1
+#                print(self.entities[ent][-1],":miam")
+                self.entities[ent][4]+=5
                 del self.food[y]
        
         #se reproduire
         for entity in self.entities:
             if entity[5]==2:
-                if entity[4]>=6 and self.t>=self.t_day:
-                    print("crac")
+                if entity[4]>=17 and self.t>=self.t_day:
+#                    print("crac")
                     Evol.dup(self,entity)
        
         #mort de faim
@@ -214,75 +216,35 @@ class Evol:
         for entity in self.entities:
             if entity[4]<=0:
                 l.append(i)
-                print(entity[-1],":meurt")
+#                print(entity[-1],":meurt")
             i+=1
         for ii in reversed(l):
             del self.entities[ii]  
             
         #repop des pommes
         if self.t >= self.t_day:
-            print("day")
+#            print("day")
             self.kill()
             self.t=0
-            Evol.food_pop(self)
+            self.food=Evol.food_init(self)
+#            Evol.food_pop(self)
             for entity in self.entities :
                 entity[5] = 0
                 entity[4] -= entity[4]/2
-            
+#            
         #changement de comportement
         for entity in self.entities :
             if entity[5] == 0 :
-                if entity[4] >= max([self.x,self.y])*0.25*entity[2] + 5 or self.t >= self.t_day*0.75 :
+                if entity[4] >= max([self.x,self.y])*0.25*entity[2] + 17 or self.t >= self.t_day*0.75 :
                     self.go_home(entity)
                     entity[5] = 1
             if entity[5] == 1 and (entity[0][0] > self.x-1.1 or entity[0][0] < 0.1 or entity[0][1] > self.y - 1.1 or entity[0][1] < 0.1) :
                 entity[5] = 2
-
-    
-    def __repr__(self):
-        done=False
-        txt="+"+self.y*"–"+"+"
-        for xi in range(self.x):
-            txt+="\n|"
-            for yi in range(self.y):
-                for entity in self.entities:
-                    done=False
-                    if xi==int(entity[0][0]+0.5) and yi==int(entity[0][1]+0.5):
-                        txt+=entity[-1]
-                        done=True
-                        break
-                for miam in self.food:
-                    if xi==miam[0] and yi == miam[1]:
-                        txt+=""
-                        done=True
-                        break
-                if done==False:
-                    txt+=" "
-            txt+="|"
-        txt+="\n+"+self.y*"–"+"+"
-        return txt
         
     def test(self):
         for entity in self.entities:
-            print(entity[0],entity[-1])
-    
-
-if __name__=="__main__":
-    c=0
-    print("-------")
-    t=Evol(9,8,16)
-    print(t)
-    while True:
-        a=input("q to quit: ")
-        if a=="q":
-            break
-        elif a=="p":
-            t.test()
-        print("-------")
-        t.move()
-        c+=1
-        print(t)
-        if t.food==[]:
-            for entity in t.entities:
-                print(entity[-1],":",entity[4])
-            print("turn:",c)
+            print(entity[6])
+            
+if __name__ == "__main__":
+    t=Evol(10,10,10)
+    t.test()
