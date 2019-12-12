@@ -1,6 +1,6 @@
 from tkinter import *
 import time
-from Evlove_q_1 import Evol
+from Evolution_J import Evol
 import random
 
 def get_colour():
@@ -28,7 +28,7 @@ class affichage :
                         canvas.create_oval( (i[0][0]-0.5)*100*self.scale, (i[0][1]-0.5)*100*self.scale, (i[0][0]+0.5)*100*self.scale, (i[0][1]+0.5)*100*self.scale,fill = my_random_colours[index])
                     for j in A.food :
                         canvas.create_oval( (j[0]-0.125)*100*self.scale, (j[1]-0.125)*100*self.scale, (j[0]+0.125)*100*self.scale, (j[1]+0.125)*100*self.scale,fill = "#005500")
-                    time.sleep(0.3)
+                    time.sleep(0.1)
                     canvas.create_text(50, 20, text="hour : {}".format(A.t), font="Arial 16 italic", fill="black")
                     canvas.update()
         window = Tk()
