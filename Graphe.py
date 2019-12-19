@@ -77,7 +77,7 @@ class display :
                             if (self.class_in.day%self.factor) == 0 :
                                 canvas.delete(ALL)
                                 for index,i in enumerate(self.class_in.creatures) :
-                                    canvas.create_oval( (i.position[0]-i.hitbox)*100*self.scale, (i.position[1]-i.hitbox)*100*self.scale, (i.position[0]+i.hitbox)*100*self.scale, (i.position[1]+i.hitbox)*100*self.scale,fill = my_random_colours[index])
+                                    canvas.create_oval( (i.position[0]-i.hitbox)*100*self.scale, (i.position[1]-i.hitbox)*100*self.scale, (i.position[0]+i.hitbox)*100*self.scale, (i.position[1]+i.hitbox)*100*self.scale,fill = i.colour)
                                 for j in self.class_in.foods :
                                     canvas.create_oval( (j[0]-0.125)*100*self.scale, (j[1]-0.125)*100*self.scale, (j[0]+0.125)*100*self.scale, (j[1]+0.125)*100*self.scale,fill = "#005500")
                                 time.sleep(self.frame)
