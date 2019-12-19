@@ -2,13 +2,24 @@ import numpy as np
 import random as rd
 
 class Creature:
-    def __init__(self, position, angle, base_speed,base_energie, hitbox, sence,  generation=0, comportement=0):
+    def __init__(self, position, angle, base_speed,base_energie, hitbox, sence,  generation=0, comportement=0,var1=1, var2=1, var3=1):
         self.position = position
         self.angle = angle + Creature.add_angle()
-        self.speed = Creature.abs_rd_gauss(base_speed, 0.3)
-        self.hitbox = Creature.abs_rd_gauss(hitbox, 0.1)
+        if var1 :
+            self.speed = Creature.abs_rd_gauss(base_speed, 0.3)
+        else :
+            self.speed = 1
+        if var2 :
+            self.hitbox = Creature.abs_rd_gauss(hitbox, 0.1)
+            if self.hitbox < 0.05 :
+                self.hitbox = 0.05
+        else :
+            self.hitbox=0.5
         self.energie = base_energie
-        self.sence = Creature.abs_rd_gauss(sence, 0.25)
+        if var3 :
+            self.sence = Creature.abs_rd_gauss(sence, 0.25)
+        else :
+            self.sence=1
         self.comp = comportement
         self.gen = generation
         ratio = 255/(self.speed + self.hitbox + self.sence)
