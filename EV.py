@@ -77,6 +77,27 @@ class Creature:
                     the_food = creature.position
         return d, the_food
     
+    def nearest_pred(self, creatures, rp):
+        d = 10 ** 1000
+        the_pred = 0
+        for crea in creatures:
+            if crea.hitbox ** 2 * rp > self.hitbox:
+                di=Creature.dist(self, crea.position)
+                if di < d:
+                    d=di
+                    the_pred = crea.position
+        return d, the_pred
+    
+    def moveAway(self, coo):
+        try:
+            direction = (self.position-coo)/Creature.dist(self, coo)
+            
+        except ZeroDivisionError:
+            direction = 0
+        vitesse = min(self.speed, Creature.dist(self, coo))
+        self.position += -direction * vitesse
+        self.energie -= 0.25 * vitesse * np.pi * self.hitbox ** 2
+        
     def moveToward(self,coo):
         try:
             direction = (self.position-coo)/Creature.dist(self, coo)
@@ -89,7 +110,11 @@ class Creature:
     
     def moving(self, foods, creatures, rp):
         d, the_food = Creature.nearest_food(self,foods, creatures, rp)
-        if self.comp == 0 and d <= self.sence:
+        dp, the_pred = Creature.nearest_pred(self, creatures, rp)
+        if self.comp == 0 and dp <= self.sence:
+            Creature.moveAway(self, the_pred)
+            
+        elif self.comp == 0 and d <= self.sence:
             Creature.moveToward(self, the_food)
             
         elif self.comp != 2:
