@@ -30,9 +30,13 @@ class display :
         self.b = 1
         self.fig = plt.figure()
         self.ax1 = self.fig.add_subplot(221)
+        plt.title("nombre de créatures")
         self.ax2 = self.fig.add_subplot(222)
+        plt.title("vitesse moyenne")
         self.ax3 = self.fig.add_subplot(223)
+        plt.title("taille moyenne")
         self.ax4 = self.fig.add_subplot(224)
+        plt.title("portée moyenne")
         self.ax2.set_ylim(0,3)
         self.ax3.set_ylim(0,2)
         self.ax4.set_ylim(0,2)
