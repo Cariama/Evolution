@@ -17,7 +17,9 @@ def recup() :
     hauteur = int(enter_2.get())
     nombre_de_creature = int(enter_3.get())
     rapport_bouffe = float(enter_8.get())
-    A = Evol(nombre_de_creature,largeur,hauteur,rapport_nourriture=rapport_bouffe)
+    day = int(value_9.get())
+    rp = 1-float(value_11.get())
+    A = Evol(nombre_de_creature,largeur,hauteur,rapport_nourriture=rapport_bouffe,t_day=day,rapport_predation= rp)
     B = display(A)
     B.launch()
     
@@ -43,6 +45,7 @@ class display :
         self.ax3.set_ylim(0,2)
         self.ax4.set_ylim(0,2)
         self.factor = int(value_7.get())
+    
     def launch(self) :
         if value_7.get()=="0" :
             for i in range(self.Nod) :
@@ -119,12 +122,6 @@ class display :
                         plt.pause(0.000005)
                         self.x += 1
                     
-                    
-                    
-                    
-                    
-                    
-                    
                 canvas.create_text(200, 60, text="press s to start another simulation", font="Arial 16 italic", fill="black")
         canvas.focus_set()
         canvas.bind("<Key>", clavier)
@@ -146,6 +143,9 @@ Frame_4.pack(side=LEFT,padx=30,pady=30)
 
 Frame_5 = Frame(window, borderwidth=2, relief = GROOVE)
 Frame_5.pack(side=LEFT,padx=30,pady=30)
+
+Frame_6 = Frame(window, borderwidth=2, relief = GROOVE)
+Frame_6.pack(side=LEFT,padx=30,pady=30)
 
 Frame_V = Frame(window, borderwidth=2, relief = GROOVE)
 Frame_V.pack(side = BOTTOM)
@@ -214,6 +214,39 @@ value_8.set(0.2)
 enter_8 = Entry(Frame_5, textvariable=value_8, width=15)
 enter_8.pack()
 
-but_1 = Button(Frame_V, text="Valider", command=recup)
-but_1.pack()
+label_9 = Label(Frame_3, text="durée d'une journée", bg="white",width = 22 ,height = 2)
+label_9.pack()
+value_9 = StringVar()
+value_9.set(24)
+enter_9 = Entry(Frame_3, textvariable=value_9, width=15)
+enter_9.pack()
+
+label_10 = Label(Frame_6, text="durée d'une journée", bg="white",width = 22 ,height = 2)
+label_10.pack()
+
+variable_1 = IntVar()
+variable_2 = IntVar()
+variable_3 = IntVar()
+variable_1.set(1)
+variable_2.set(1)
+variable_3.set(1)
+
+but_4 = Checkbutton(Frame_6,text="vitesse",variable=variable_1)
+but_5 = Checkbutton(Frame_6,text="taille",variable=variable_2)
+but_6 = Checkbutton(Frame_6,text="portée de détection",variable=variable_3)
+
+but_4.pack()
+but_5.pack()
+but_6.pack()
+
+label_11 = Label(Frame_5, text="rapport de prédation", bg="white",width = 22 ,height = 2)
+label_11.pack()
+value_11 = StringVar()
+value_11.set(0.58)
+enter_11 = Entry(Frame_5, textvariable=value_11, width=15)
+enter_11.pack()
+
+but_V = Button(Frame_V, text="Valider", command=recup)
+but_V.pack()
+
 window.mainloop()
