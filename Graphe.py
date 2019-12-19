@@ -2,7 +2,8 @@ from tkinter import *
 import matplotlib.pyplot as plt
 import time
 from statistics import mean
-from EV import Evol
+from statistics import variance
+from Evol_J import Evol
 import random
 
 def get_colour():
@@ -15,7 +16,8 @@ def recup() :
     largeur = int(enter_1.get())
     hauteur = int(enter_2.get())
     nombre_de_creature = int(enter_3.get())
-    A = Evol(nombre_de_creature,largeur,hauteur)
+    rapport_bouffe = float(enter_8.get())
+    A = Evol(nombre_de_creature,largeur,hauteur,rapport_nourriture=rapport_bouffe)
     B = display(A)
     B.launch()
     
@@ -57,11 +59,17 @@ class display :
                     size_list += [i.hitbox]
                     sence_list += [i.sence]
                 y2 = mean(speed_list)
-                self.ax2.plot(self.x,y2,"b^")
+                y2_ = variance(speed_list)
+                self.ax2.plot(self.x,y2,"r^")
+                self.ax2.errorbar(self.x,y2,y2_,color="black")
                 y3 = mean(size_list)
+                y3_ = variance(size_list)
                 self.ax3.plot(self.x,y3,"go")
+                self.ax3.errorbar(self.x,y3,y3_,color="black")
                 y4 = mean(sence_list)
+                y4_ = variance(sence_list)
                 self.ax4.plot(self.x,y4,"bo")
+                self.ax4.errorbar(self.x,y4,y4_,color="black")
                 plt.pause(0.000005)
                 self.x += 1
         else :
@@ -85,7 +93,7 @@ class display :
                                 for j in self.class_in.foods :
                                     canvas.create_oval( (j[0]-0.125)*100*self.scale, (j[1]-0.125)*100*self.scale, (j[0]+0.125)*100*self.scale, (j[1]+0.125)*100*self.scale,fill = "#005500")
                                 time.sleep(self.frame)
-                                canvas.create_text(100, 20, text="hour : {}, day : {}".format(self.class_in.t,self.class_in.day), font="Arial 16 italic", fill="black")
+                                canvas.create_text(100, 40, text="hour : {}\nday : {}\npopulation : {}".format(self.class_in.t,self.class_in.day,len(self.class_in.creatures)), font="Arial 16 italic", fill="black")
                                 canvas.update()
                         y = len(self.class_in.creatures)
                         self.ax1.plot(self.x,y,"g^")
@@ -97,11 +105,17 @@ class display :
                             size_list += [i.hitbox]
                             sence_list += [i.sence]
                         y2 = mean(speed_list)
-                        self.ax2.plot(self.x,y2,"b^")
+                        y2_ = variance(speed_list)
+                        self.ax2.plot(self.x,y2,"r^")
+                        self.ax2.errorbar(self.x,y2,y2_,color="black")
                         y3 = mean(size_list)
+                        y3_ = variance(size_list)
                         self.ax3.plot(self.x,y3,"go")
+                        self.ax3.errorbar(self.x,y3,y3_,color="black")
                         y4 = mean(sence_list)
+                        y4_ = variance(sence_list)
                         self.ax4.plot(self.x,y4,"bo")
+                        self.ax4.errorbar(self.x,y4,y4_,color="black")
                         plt.pause(0.000005)
                         self.x += 1
                     
@@ -117,56 +131,72 @@ class display :
         window2.mainloop()
 
 window = Tk()
+
 Frame_1 = Frame(window, borderwidth=2, relief=GROOVE)
 Frame_1.pack(side = LEFT,padx=30,pady=30)
+
 Frame_2 = Frame(window, borderwidth=2, relief = GROOVE)
 Frame_2.pack(side=LEFT,padx=30,pady=30)
+
 Frame_3 = Frame(window, borderwidth=2, relief = GROOVE)
 Frame_3.pack(side=LEFT,padx=30,pady=30)
+
 Frame_4 = Frame(window, borderwidth=2, relief = GROOVE)
 Frame_4.pack(side=LEFT,padx=30,pady=30)
+
+Frame_5 = Frame(window, borderwidth=2, relief = GROOVE)
+Frame_5.pack(side=LEFT,padx=30,pady=30)
+
 Frame_V = Frame(window, borderwidth=2, relief = GROOVE)
 Frame_V.pack(side = BOTTOM)
+
 label_1 = Label(Frame_1, text="largeur", bg="white", width = 12 ,height = 2)
 label_1.pack()
 value_1 = StringVar()
 value_1.set(20)
 enter_1 = Entry(Frame_1, textvariable=value_1, width=15)
 enter_1.pack()
+
 label_2 = Label(Frame_1, text="hauteur", bg="white",width = 12 ,height = 2)
 label_2.pack()
 value_2 = StringVar() 
 value_2.set(20)
 enter_2 = Entry(Frame_1, textvariable=value_2, width=15)
 enter_2.pack()
+
 label_3 = Label(Frame_2, text="nombre de créatures", bg="white",width = 22 ,height = 2)
 label_3.pack()
 value_3 = StringVar() 
 value_3.set(10)
 enter_3 = Entry(Frame_2, textvariable=value_3, width=15)
 enter_3.pack()
+
 label_4 = Label(Frame_2, text="échelle", bg="white",width = 12 ,height = 2)
 label_4.pack()
 value_4 = StringVar() 
 value_4.set(0.5)
 enter_4 = Entry(Frame_2, textvariable=value_4, width=15)
 enter_4.pack()
+
 label_5 = Label(Frame_3, text="nombres de jours à simuler", bg="white",width = 22 ,height = 2)
 label_5.pack()
 value_5 = StringVar()
 value_5.set(50)
 enter_5 = Entry(Frame_3, textvariable=value_5, width=15)
 enter_5.pack()
+
 label_6 = Label(Frame_3, text="durée d'une heure", bg="white",width = 22 ,height = 2)
 label_6.pack()
 value_6 = StringVar()
 value_6.set(0.1)
 enter_6 = Entry(Frame_3, textvariable=value_6, width=15)
 enter_6.pack()
+
 label_7 = Label(Frame_4, text="affichage graphique", bg="white",width = 22 ,height = 2)
 label_7.pack()
 value_7 = StringVar()
 value_7.set(1)
+
 but_0 = Radiobutton(Frame_4, text="jamais", variable = value_7, value=0)
 but_1 = Radiobutton(Frame_4, text="tous les jours", variable = value_7, value=1)
 but_2 = Radiobutton(Frame_4, text="tous les 5 jours", variable = value_7, value=5)
@@ -176,6 +206,13 @@ but_0.pack()
 but_1.pack()
 but_2.pack()
 but_3.pack()
+
+label_8 = Label(Frame_5, text="rapport de nourriture", bg="white",width = 22 ,height = 2)
+label_8.pack()
+value_8 = StringVar()
+value_8.set(0.2)
+enter_8 = Entry(Frame_5, textvariable=value_8, width=15)
+enter_8.pack()
 
 but_1 = Button(Frame_V, text="Valider", command=recup)
 but_1.pack()
