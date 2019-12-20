@@ -1,8 +1,12 @@
 import numpy as np
 import random as rd
 
+def conso(speed, hitbox, sence) :
+    value = 0.25*speed*np.pi*hitbox**2*sence
+    return value
+
 class Creature:
-    def __init__(self, position, angle, base_speed,base_energie, hitbox, sence,  generation=0, comportement=0,var1=1, var2=1, var3=1):
+    def __init__(self, position, angle, base_speed,base_energie, hitbox, sence,  generation=0, comportement=0,var1=1, var2=1, var3=1, func = conso):
         self.position = position
         self.angle = angle + Creature.add_angle()
         if var1 :
@@ -10,14 +14,14 @@ class Creature:
         else :
             self.speed = 1
         if var2 :
-            self.hitbox = Creature.abs_rd_gauss(hitbox, 0.1)
+            self.hitbox = Creature.abs_rd_gauss(hitbox, 0.12)
             if self.hitbox < 0.05 :
                 self.hitbox = 0.05
         else :
             self.hitbox=0.5
         self.energie = base_energie
         if var3 :
-            self.sence = Creature.abs_rd_gauss(sence, 0.25)
+            self.sence = Creature.abs_rd_gauss(sence, 0.12)
         else :
             self.sence=1
         self.comp = comportement
@@ -96,7 +100,7 @@ class Creature:
             direction = 0
         vitesse = min(self.speed, Creature.dist(self, coo))
         self.position += -direction * vitesse
-        self.energie -= 0.25 * vitesse * np.pi * self.hitbox ** 2
+        self.energie -= 0.2 * self.speed**2 * np.pi * self.hitbox ** 2 + 0.2*np.sqrt(self.sence)
         
     def moveToward(self,coo):
         try:
@@ -106,7 +110,7 @@ class Creature:
             direction = 0
         vitesse = min(self.speed, Creature.dist(self, coo))
         self.position += direction * vitesse
-        self.energie -= 0.25 * vitesse * np.pi * self.hitbox ** 2
+        self.energie -= 0.2 * self.speed**2 * np.pi * self.hitbox ** 2 + 0.2*np.sqrt(self.sence)
     
     def moving(self, foods, creatures, rp):
         d, the_food = Creature.nearest_food(self,foods, creatures, rp)
@@ -119,7 +123,7 @@ class Creature:
             
         elif self.comp != 2:
             self.position += Creature.direction(self) * self.speed
-            self.energie -= 0.25 * self.speed * np.pi * self.hitbox ** 2
+            self.energie -= 0.2 * self.speed**2 * np.pi * self.hitbox ** 2 + 0.2*np.sqrt(self.sence)
             if self.comp == 0:
                 self.angle += Creature.add_angle()
                 
@@ -143,7 +147,7 @@ class Evol:
         self.rp=rapport_predation
         self.foods = Evol.foods_init(self)
         start_loc, start_angle = Evol.init_states(self, n_creatures)
-        self.creatures = [Creature(start_loc[i], start_angle[i], 1, rd.uniform(1,7), 0.5, rd.uniform(0.5, 2),var1 = V1,var2 = V2, var3=V3) for i in range(n_creatures)]
+        self.creatures = [Creature(start_loc[i], start_angle[i], 1, 5, 0.5, 1,var1 = V1,var2 = V2, var3=V3) for i in range(n_creatures)]
         self.t = 0
         self.t_day = t_day
         self.day = 0
@@ -246,18 +250,10 @@ class Evol:
                 if crea.energie >= 25 * crea.hitbox ** 2:
                     new_creatures.append(Evol.dup(self, crea))
             self.creatures += new_creatures
-            mini=self.creatures[0].gen
-            maxi=0
             for crea in self.creatures:
                 crea.comp = 0
-#                crea.energie /= 2 #???
-                if crea.gen<mini:
-                    mini=crea.gen
-                if crea.gen > maxi:
-                    maxi=crea.gen
-#            print(len(self.creatures))
-#            print("min;",mini,"max:",maxi)
-#            print("---------")
+                crea.energie /= 2
+                
         #Changement de comportement
         for crea in self.creatures:
             if crea.comp == 0 and (crea.energie >= max([self.x, self.y]) * 0.25 * crea.speed + 25 * crea.hitbox ** 2 or self.t >= self.t_day*0.75):
