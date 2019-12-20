@@ -193,7 +193,10 @@ class Evol:
             for yi in range(1, self.y - 1):
                 l.append(np.array([xi + rd.gauss(0, 0.35), yi + rd.gauss(0,0.35)]))
         n_food = int((self.x-1) * (self.y - 1) * self.rap_food + 0.5)
-        return rd.sample(l,n_food)
+        try:
+            return rd.sample(l,n_food)
+        except:
+            return l
     
     def dup(self,crea):
         '''Gère la reproduction'''
