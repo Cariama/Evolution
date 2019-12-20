@@ -158,7 +158,7 @@ class Evol:
         self.creatures = [Creature(start_loc[i], start_angle[i], 1, 5, 0.5, 1, var1 = V1, var2 = V2, var3 = V3, function = func) for i in range(n_creatures)]
         self.t = 0
         self.t_day = t_day
-        self.day = 0
+        self.day = 1
         self.V1 = V1 #gère l'activation de la variation de vitesse
         self.V2 = V2 #gère l'activation de la variation de hitbox
         self.V3 = V3 #gère l'activation de la variation de sence
