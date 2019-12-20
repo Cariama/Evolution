@@ -2,11 +2,11 @@ import numpy as np
 import random as rd
 
 def conso(speed, hitbox, sence) :
-    value = 0.25*speed*np.pi*hitbox**2*sence
+    value = 0.25*speed*np.pi*hitbox**2*np.sqrt(sence)
     return value
 
 class Creature:
-    def __init__(self, position, angle, base_speed,base_energie, hitbox, sence,  generation=0, comportement=0,var1=1, var2=1, var3=1, func = conso):
+    def __init__(self, position, angle, base_speed,base_energie, hitbox, sence,  generation=0, comportement=0,var1=1, var2=1, var3=1, function = conso):
         self.position = position
         self.angle = angle + Creature.add_angle()
         if var1 :
@@ -22,12 +22,15 @@ class Creature:
         self.energie = base_energie
         if var3 :
             self.sence = Creature.abs_rd_gauss(sence, 0.12)
+            if self.sence < 0.05 :
+                self.sence = 0.05
         else :
             self.sence=1
         self.comp = comportement
         self.gen = generation
         ratio = 255/(self.speed + self.hitbox + self.sence)
         self.colour = Creature.rgb_to_hex((int(self.speed * ratio),int(self.hitbox * ratio), int(self.sence * ratio)))
+        self.down_energy = function
         
     def rgb_to_hex(rgb):
         return "#"+str('%02x%02x%02x' % rgb)
@@ -100,7 +103,7 @@ class Creature:
             direction = 0
         vitesse = min(self.speed, Creature.dist(self, coo))
         self.position += -direction * vitesse
-        self.energie -= 0.2 * self.speed**2 * np.pi * self.hitbox ** 2 + 0.2*np.sqrt(self.sence)
+        self.energie -= self.down_energy(self.speed,self.hitbox,self.sence)
         
     def moveToward(self,coo):
         try:
@@ -110,7 +113,7 @@ class Creature:
             direction = 0
         vitesse = min(self.speed, Creature.dist(self, coo))
         self.position += direction * vitesse
-        self.energie -= 0.2 * self.speed**2 * np.pi * self.hitbox ** 2 + 0.2*np.sqrt(self.sence)
+        self.energie -= self.down_energy(self.speed,self.hitbox,self.sence)
     
     def moving(self, foods, creatures, rp):
         d, the_food = Creature.nearest_food(self,foods, creatures, rp)
@@ -123,7 +126,7 @@ class Creature:
             
         elif self.comp != 2:
             self.position += Creature.direction(self) * self.speed
-            self.energie -= 0.2 * self.speed**2 * np.pi * self.hitbox ** 2 + 0.2*np.sqrt(self.sence)
+            self.energie -= self.down_energy(self.speed,self.hitbox,self.sence)
             if self.comp == 0:
                 self.angle += Creature.add_angle()
                 
@@ -140,20 +143,21 @@ class Creature:
 #-------------------------
 
 class Evol:
-    def __init__(self, n_creatures, x, y, rapport_nourriture=0.2, rapport_predation=0.42, t_day=24, V1=1,V2=2,V3=3):
+    def __init__(self, n_creatures, x, y, rapport_nourriture=0.2, rapport_predation=0.42, t_day = 24, V1 = 1, V2 = 2,V3 = 3, func = conso):
         self.x, self.y = x, y
         self.rap_food = rapport_nourriture
         self.food_hitbox=0.125
         self.rp=rapport_predation
         self.foods = Evol.foods_init(self)
         start_loc, start_angle = Evol.init_states(self, n_creatures)
-        self.creatures = [Creature(start_loc[i], start_angle[i], 1, 5, 0.5, 1,var1 = V1,var2 = V2, var3=V3) for i in range(n_creatures)]
+        self.creatures = [Creature(start_loc[i], start_angle[i], 1, 5, 0.5, 1, var1 = V1, var2 = V2, var3 = V3, function = func) for i in range(n_creatures)]
         self.t = 0
         self.t_day = t_day
         self.day = 0
         self.V1 = V1
         self.V2 = V2
         self.V3 = V3
+        self.func = func
         
     def init_states(self, n_creatures):
         oy,ox,my,mx=0,0,0,0 #oy:y=0, ox:x=0, my:y=max, mx:x=max
@@ -187,7 +191,7 @@ class Evol:
     
     def dup(self,crea):
         a = np.array([rd.uniform(-0.1, 0.1), rd.uniform(-0.1, 0.1)])
-        new_crea = Creature(crea.position + a, crea.angle, crea.speed, crea.energie/2, crea.hitbox, crea.sence, generation = crea.gen + 1, var1 = self.V1, var2 = self.V2, var3 = self.V3)
+        new_crea = Creature(crea.position + a, crea.angle, crea.speed, crea.energie/2, crea.hitbox, crea.sence, generation = crea.gen + 1, var1 = self.V1, var2 = self.V2, var3 = self.V3, function = self.func)
         new_crea.anti_exit(self.x-1, self.y-1)
         crea.energie /= 2
         return new_crea
