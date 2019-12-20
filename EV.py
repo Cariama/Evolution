@@ -90,7 +90,7 @@ class Creature:
     
     def moveAway(self, coo):
         try:
-            direction = (self.position-coo)/Creature.dist(self, coo)
+            direction = -(self.position-coo)/Creature.dist(self, coo)
             
         except ZeroDivisionError:
             direction = 0
@@ -100,7 +100,7 @@ class Creature:
         
     def moveToward(self,coo):
         try:
-            direction = (self.position-coo)/Creature.dist(self, coo)
+            direction = -(self.position-coo)/Creature.dist(self, coo)
             
         except ZeroDivisionError:
             direction = 0
@@ -136,17 +136,20 @@ class Creature:
 #-------------------------
 
 class Evol:
-    def __init__(self, n_creatures, x, y, rapport_nourriture=0.2, rapport_predation=0.42, t_day=24):
+    def __init__(self, n_creatures, x, y, rapport_nourriture=0.2, rapport_predation=0.42, t_day=24, V1=1,V2=2,V3=3):
         self.x, self.y = x, y
         self.rap_food = rapport_nourriture
         self.food_hitbox=0.125
         self.rp=rapport_predation
         self.foods = Evol.foods_init(self)
         start_loc, start_angle = Evol.init_states(self, n_creatures)
-        self.creatures = [Creature(start_loc[i], start_angle[i], 1, rd.uniform(1,7), 0.5, rd.uniform(0.5, 2)) for i in range(n_creatures)]
+        self.creatures = [Creature(start_loc[i], start_angle[i], 1, rd.uniform(1,7), 0.5, rd.uniform(0.5, 2),var1 = V1,var2 = V2, var3=V3) for i in range(n_creatures)]
         self.t = 0
         self.t_day = t_day
         self.day = 0
+        self.V1 = V1
+        self.V2 = V2
+        self.V3 = V3
         
     def init_states(self, n_creatures):
         oy,ox,my,mx=0,0,0,0 #oy:y=0, ox:x=0, my:y=max, mx:x=max
@@ -180,7 +183,7 @@ class Evol:
     
     def dup(self,crea):
         a = np.array([rd.uniform(-0.1, 0.1), rd.uniform(-0.1, 0.1)])
-        new_crea = Creature(crea.position + a, crea.angle, crea.speed, crea.energie/2, crea.hitbox, crea.sence, generation = crea.gen + 1)
+        new_crea = Creature(crea.position + a, crea.angle, crea.speed, crea.energie/2, crea.hitbox, crea.sence, generation = crea.gen + 1, var1 = self.V1, var2 = self.V2, var3 = self.V3)
         new_crea.anti_exit(self.x-1, self.y-1)
         crea.energie /= 2
         return new_crea
