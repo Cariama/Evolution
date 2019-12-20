@@ -87,7 +87,7 @@ class display :
                 self.x += 1
         else :
             window2 = Tk()
-            canvas = Canvas(window2, width=(self.class_in.x)*100*self.scale,height = (self.class_in.y)*100*self.scale, background = "white") #création de la fenêtre d'affichage graphique
+            canvas = Canvas(window2, width=int(self.class_in.x*100*self.scale),height = int(self.class_in.y*100*self.scale), background = "white") #création de la fenêtre d'affichage graphique
             for crea in self.class_in.creatures :
                 canvas.create_oval((crea.position[0]-0.5)*100*self.scale,(crea.position[1]-0.5)*100*self.scale,(crea.position[0]+0.5)*100*self.scale,(crea.position[1]+0.5)*100*self.scale,fill = "#555555")
             canvas.create_text(200, 60, text="press s to start the simulation", font="Arial 16 italic", fill="black")
@@ -135,7 +135,7 @@ class display :
                         plt.pause(0.000005)
                         self.x += 1
                     
-                canvas.create_text(200, 60, text="press s to start another simulation", font="Arial 16 italic", fill="black")
+                canvas.create_text(250, 250, text="press s to start another simulation", font="Arial 16 italic", fill="black")
         canvas.focus_set()
         canvas.bind("<Key>", clavier)
         window2.mainloop()
