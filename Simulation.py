@@ -1,5 +1,6 @@
 import numpy as np
 import random as rd
+from threading import Thread
 
 def conso(speed, hitbox, sence) : 
     '''function par défaut régulant la consommation'''
@@ -10,10 +11,12 @@ class Creature:
     def __init__(self, position, angle, base_speed,base_energie, hitbox, sence,  generation=0, comportement=0,var1=1, var2=1, var3=1, function = conso):
         self.position = position
         self.angle = angle + Creature.add_angle()
+        
         if var1 : # = 1 si on effectue les mutation de vitesse
             self.speed = Creature.abs_rd_gauss(base_speed, 0.3)
         else :
             self.speed = 1
+            
         if var2 :# = 1 si on effectue les mutation de hitbox(rayon de la hitbox)
             self.hitbox = Creature.abs_rd_gauss(hitbox, 0.12)
             if self.hitbox < 0.05 :
@@ -21,6 +24,7 @@ class Creature:
         else :
             self.hitbox=0.5
         self.energie = base_energie
+        
         if var3 :# = 1 si on effectue les mutation de sence(rayon de vision)
             self.sence = Creature.abs_rd_gauss(sence, 0.12)
             if self.sence < 0.05 :
@@ -28,18 +32,20 @@ class Creature:
         else :
             self.sence=1
         self.comp = comportement # 0 pour deplacement normal, 1 pour retourner à la maison et 2 pour rester à la maison
-        self.gen = generation
+        self.gen = generation #utile pour connaitre si la portée de créature est jeune ou non
         ratio = 255/(self.speed + self.hitbox + self.sence) # pour color
         self.colour = Creature.rgb_to_hex((int(self.speed * ratio),int(self.hitbox * ratio), int(self.sence * ratio)))
-        self.down_energy = function
+        self.down_energy = function #fonction de consomation d'énergie
+
         
-    def rgb_to_hex(rgb):
+    def rgb_to_hex(rgb): #cette fonction a été trouvée sur internet
         return "#"+str('%02x%02x%02x' % rgb)
         
     def direction(self):
         return np.array([np.cos(self.angle), np.sin(self.angle)])
     
     def add_angle():
+        '''fonction qui définit si la créature change de direction'''
         if rd.random() < 0.4:
             return rd.gauss(0, 0.3)
         
@@ -51,7 +57,7 @@ class Creature:
         return abs(base + rd.gauss(0, sigma))
         
     def dist(self,coo):
-        return np.sqrt(np.sum((self.position - coo) ** 2))
+        return float(np.sqrt(np.sum((self.position - coo) ** 2)))
     
     def anti_exit(self, x_max, y_max):
         '''Empêche la créatures de sortir du plateau'''
@@ -75,59 +81,69 @@ class Creature:
         ''' Trouve la nourriture la plus proche et renvoit la distance de celle-ci et sa position'''
         d = 10**1000
         the_food=0
+        
         for food in foods:
             di = Creature.dist(self,food)
             if di < d:
                 d = di
                 the_food = food
+                
         for creature in creatures:
             if creature.hitbox ** 2 < self.hitbox ** 2 * rp:
                 di=Creature.dist(self, creature.position)
                 if di < d:
                     d = di
                     the_food = creature.position
-        return d, the_food
+        self.df = d
+        self.the_food = the_food
     
     def nearest_pred(self, creatures, rp):
         ''' Trouve le prédateur l plus proche et renvoit la distance de celui-ci et sa position'''
         d = 10 ** 1000
         the_pred = 0
+        
         for crea in creatures:
             if crea.hitbox ** 2 * rp > self.hitbox:
                 di=Creature.dist(self, crea.position)
                 if di < d:
                     d=di
                     the_pred = crea.position
-        return d, the_pred
+        self.dp = d
+        self.the_pred = the_pred
     
     def moveAway(self, coo):
-        try:
-            direction = -(self.position-coo)/Creature.dist(self, coo)
-            
-        except ZeroDivisionError:
+        if Creature.dist(self, coo) != 0 : #on a essayé de mettre un try mais une erreur s'affichait quand même lorsque la valeur atteignait 0, on a donc mis un if
+            direction = (coo-self.position)/Creature.dist(self, coo)
+        else :
             direction = 0
         vitesse = min(self.speed, Creature.dist(self, coo))
         self.position += - direction * vitesse
         self.energie -= self.down_energy(self.speed,self.hitbox,self.sence)
         
     def moveToward(self,coo):
-        try:
-            direction = -(self.position-coo)/Creature.dist(self, coo)
+        if Creature.dist(self, coo) != 0 :
+            direction = (coo-self.position)/Creature.dist(self, coo)
             
-        except ZeroDivisionError:
+        else :
             direction = 0
         vitesse = min(self.speed, Creature.dist(self, coo))
         self.position += direction * vitesse
         self.energie -= self.down_energy(self.speed,self.hitbox,self.sence)
     
     def moving(self, foods, creatures, rp):
-        d, the_food = Creature.nearest_food(self,foods, creatures, rp)
-        dp, the_pred = Creature.nearest_pred(self, creatures, rp)
-        if self.comp == 0 and dp <= self.sence:
-            Creature.moveAway(self, the_pred)
+        '''Fait bouger la créature en fonction de son environnement'''
+        T1 = Thread(target = Creature.nearest_food, args = (self,foods, creatures, rp))
+        T2 = Thread(target = Creature.nearest_pred, args = (self, creatures, rp))
+        T1.start()
+        T2.start()
+        T1.join()
+        T2.join()
+        
+        if self.comp == 0 and self.dp <= self.sence:
+            Creature.moveAway(self, self.the_pred)
             
-        elif self.comp == 0 and d <= self.sence:
-            Creature.moveToward(self, the_food)
+        elif self.comp == 0 and self.df <= self.sence:
+            Creature.moveToward(self, self.the_food)
             
         elif self.comp != 2:
             self.position += Creature.direction(self) * self.speed
@@ -136,6 +152,7 @@ class Creature:
                 self.angle += Creature.add_angle()
                 
     def go_home(self, x, y) :
+        '''Donne la direction du bord le plus proche'''
         dist_up = y  - self.position[1]
         dist_down = self.position[1]
         dist_right = x  - self.position[0]
@@ -215,6 +232,7 @@ class Evol:
             if d < (self.x * self.y) ** 2:
                 self.creatures[ent].energie += 5
                 del self.foods[l - i - 1]    
+                
         dead=[]        
         for i, crea1 in enumerate(self.creatures):
             l=[]
@@ -238,19 +256,24 @@ class Evol:
                 del self.creatures[lenght - i - 1]
     
     def move(self):
+        '''Fonction qui fait bouger chaque créature et qui fait aussi avancer le temps'''
         #Le temps défile
         self.t += 1
+        
         #Deplcement
         for crea in self.creatures:
             crea.moving(self.foods, self.creatures, self.rp)
             crea.anti_exit(self.x, self.y )
+            
         #Se nourrir
         Evol.feed(self) 
+        
         #Mourir de faim
         l=len(self.creatures)
         for i, crea in enumerate(reversed(self.creatures)):
             if crea.energie <= 0:
                 del self.creatures[l-i-1]
+                
         #Fin de journée
         if self.t >= self.t_day:
             self.t = 0
