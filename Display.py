@@ -16,18 +16,22 @@ def recup() :
     rapport_bouffe = float(enter_8.get())
     day = int(value_9.get())
     rp = 1-float(value_11.get()) #ce 1 - n'est là qu'à cause de la construction de la fonction feed et nearest_food
+    
     if value_12.get() == 1 :
         def conso(speed, hitbox, sence) :
             value = 0.25*speed*np.pi*hitbox**2*np.sqrt(sence)
             return value
+        
     if value_12.get() == 2 :
         def conso(speed, hitbox, sence) :
             value = 0.2*speed**2*np.pi*hitbox**2 + 0.15*np.sqrt(sence)
             return value
+        
     if value_12.get() == 3 :
         def conso(speed, hitbox, sence) :
             value = 0.15*speed**2 + 0.15*np.pi*hitbox**2 + 0.15*np.sqrt(sence)
             return value
+        
     #création de la classe evol avec les coordonnées récupérées par l'interface et lancement de l'affichage
     A = Evol(nombre_de_creature,largeur,hauteur,rapport_nourriture=rapport_bouffe,t_day=day,rapport_predation= rp, V1 = variable_1.get(), V2=variable_2.get(), V3 = variable_3.get(), func = conso)
     B = display(A)
@@ -58,11 +62,18 @@ class display :
     def launch(self) :
         """fonction qui lance l'affichage"""
         if self.factor==0 :
+            
             for i in range(self.Nod) :
+                
                 self.class_in.move() #cette fonction move fait avancer l'heure à la fin de la journée (sauf lors du premier jour) ce qui active le changement de jour et la reproduction. Sans elle, la simulation reste bloquée à la première journée.
                 while self.class_in.t < self.class_in.t_day-1 : #comme notre code remet l'heure à 0 à la fin de la journée, il faut rajouter un -1 afin que le code ne rentre pas dans une boucle infinie
                     self.class_in.move()
                 y1 = len(self.class_in.creatures)
+                
+                if y1 == 0 :
+                    print("Toutes les créatures sont mortes")
+                    break
+                
                 self.ax1.plot(self.x,y1,"g^")
                 speed_list = []
                 size_list = []
@@ -71,25 +82,42 @@ class display :
                     speed_list += [crea.speed]
                     size_list += [crea.hitbox]
                     sence_list += [crea.sence]
-                y2 = mean(speed_list)
-                y2_ = variance(speed_list)
-                self.ax2.plot(self.x,y2,"r^")
-                self.ax2.errorbar(self.x,y2,y2_,color="black")
-                y3 = mean(size_list)
-                y3_ = variance(size_list)
-                self.ax3.plot(self.x,y3,"go")
-                self.ax3.errorbar(self.x,y3,y3_,color="black")
-                y4 = mean(sence_list)
-                y4_ = variance(sence_list)
-                self.ax4.plot(self.x,y4,"bo")
-                self.ax4.errorbar(self.x,y4,y4_,color="black")
+                    
+                if y1 > 1 :
+                    y2 = mean(speed_list)
+                    y2_ = variance(speed_list)
+                    self.ax2.plot(self.x,y2,"r^")
+                    self.ax2.errorbar(self.x,y2,y2_,color="black")
+                    y3 = mean(size_list)
+                    y3_ = variance(size_list)
+                    self.ax3.plot(self.x,y3,"go")
+                    self.ax3.errorbar(self.x,y3,y3_,color="black")
+                    y4 = mean(sence_list)
+                    y4_ = variance(sence_list)
+                    self.ax4.plot(self.x,y4,"bo")
+                    self.ax4.errorbar(self.x,y4,y4_,color="black")
+                    
+                else :
+                    y2 = speed_list[0]
+                    self.ax2.plot(self.x,y2,"r^")
+                    y3 = size_list[0]
+                    self.ax3.plot(self.x,y3,"go")
+                    y4 = mean(sence_list)
+                    self.ax4.plot(self.x,y4,"bo")
+                
                 plt.pause(0.000005)
                 self.x += 1
+                
         else :
             window2 = Tk()
             canvas = Canvas(window2, width=int(self.class_in.x*100*self.scale),height = int(self.class_in.y*100*self.scale), background = "white") #création de la fenêtre d'affichage graphique
+            but_quit = Button(window2, text = "quitter",command = window2.destroy)
+            but_quit.pack()
+            but_quit.place(x=int(self.class_in.x*100*self.scale) - 40,y = int(self.class_in.y*100*self.scale) - 20)
+            
             for crea in self.class_in.creatures :
                 canvas.create_oval((crea.position[0]-0.5)*100*self.scale,(crea.position[1]-0.5)*100*self.scale,(crea.position[0]+0.5)*100*self.scale,(crea.position[1]+0.5)*100*self.scale,fill = "#555555")
+            
             canvas.create_text(200, 60, text="press s to start the simulation", font="Arial 16 italic", fill="black")
             canvas.pack()
             def clavier(event):
@@ -100,6 +128,7 @@ class display :
                         list_of_gen = [] #cette liste nous sera utile pour trouver la génération la plus jeune (plus de détails dans le fichier READ_ME)
                         for crea in self.class_in.creatures :
                             list_of_gen += [crea.gen]
+                            
                         while self.class_in.t < self.class_in.t_day-1 :
                             self.class_in.move()
                             if (self.class_in.day%self.factor) == 0 :
@@ -111,33 +140,49 @@ class display :
                                 time.sleep(self.frame)
                                 canvas.create_text(130, 50, text="hour : {}\nday : {}\npopulation : {}\ndernière génération : {}".format(self.class_in.t,self.class_in.day,len(self.class_in.creatures), max(list_of_gen)), font="Arial 16 italic", fill="black")
                                 canvas.update()
-                        y = len(self.class_in.creatures)
-                        self.ax1.plot(self.x,y,"g^")
+                                
+                        y1 = len(self.class_in.creatures)
+                        
+                        if y1 == 0 :
+                            print("Toutes les créatures sont mortes")
+                            break
+                        self.ax1.plot(self.x,y1,"g^")
                         speed_list = []
                         size_list = []
                         sence_list = []
-                        for i in self.class_in.creatures :
-                            speed_list += [i.speed]
-                            size_list += [i.hitbox]
-                            sence_list += [i.sence]
-                        y2 = mean(speed_list)
-                        y2_ = variance(speed_list)
-                        self.ax2.plot(self.x,y2,"r^")
-                        self.ax2.errorbar(self.x,y2,y2_,color="black")
-                        y3 = mean(size_list)
-                        y3_ = variance(size_list)
-                        self.ax3.plot(self.x,y3,"go")
-                        self.ax3.errorbar(self.x,y3,y3_,color="black")
-                        y4 = mean(sence_list)
-                        y4_ = variance(sence_list)
-                        self.ax4.plot(self.x,y4,"bo")
-                        self.ax4.errorbar(self.x,y4,y4_,color="black")
+                        for crea in self.class_in.creatures :
+                            speed_list += [crea.speed]
+                            size_list += [crea.hitbox]
+                            sence_list += [crea.sence]
+                            
+                        if y1 > 1 :
+                            y2 = mean(speed_list)
+                            y2_ = variance(speed_list)
+                            self.ax2.plot(self.x,y2,"r^")
+                            self.ax2.errorbar(self.x,y2,y2_,color="black")
+                            y3 = mean(size_list)
+                            y3_ = variance(size_list)
+                            self.ax3.plot(self.x,y3,"go")
+                            self.ax3.errorbar(self.x,y3,y3_,color="black")
+                            y4 = mean(sence_list)
+                            y4_ = variance(sence_list)
+                            self.ax4.plot(self.x,y4,"bo")
+                            self.ax4.errorbar(self.x,y4,y4_,color="black")
+                            
+                        else :
+                            y2 = speed_list[0]
+                            self.ax2.plot(self.x,y2,"r^")
+                            y3 = size_list[0]
+                            self.ax3.plot(self.x,y3,"go")
+                            y4 = mean(sence_list)
+                            self.ax4.plot(self.x,y4,"bo")
+                        
                         plt.pause(0.000005)
                         self.x += 1
                     
                 canvas.create_text(250, 250, text="press s to start another simulation", font="Arial 16 italic", fill="black")
-        canvas.focus_set()
         canvas.bind("<Key>", clavier)
+        canvas.focus_set()
         window2.mainloop()
 
 #La suite du code est très lourde. Elle sert à créer l'interface pour définir les conditions initiales.
