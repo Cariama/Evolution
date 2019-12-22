@@ -4,7 +4,7 @@ from threading import Thread
 
 def conso(speed, hitbox, sence) : 
     '''function par défaut régulant la consommation'''
-    value = 0.25*speed*np.pi*hitbox**2*np.sqrt(sence)
+    value = 0.25 * speed * np.pi * hitbox ** 2 * np.sqrt(sence)
     return value
 
 class Creature:
@@ -32,7 +32,7 @@ class Creature:
         else :
             self.sence=1
         self.comp = comportement # 0 pour deplacement normal, 1 pour retourner à la maison et 2 pour rester à la maison
-        self.gen = generation #utile pour connaitre si la portée de créature est jeune ou non
+        self.gen = generation #utile pour connaitre si la créature est jeune ou non
         ratio = 255/(self.speed + self.hitbox + self.sence) # pour color
         self.colour = Creature.rgb_to_hex((int(self.speed * ratio),int(self.hitbox * ratio), int(self.sence * ratio)))
         self.down_energy = function #fonction de consomation d'énergie
@@ -53,7 +53,7 @@ class Creature:
             return(0)
     
     def abs_rd_gauss(base, sigma):
-        '''Ajoute  une valeur aléatoir venant d'une gaussienne de centre 0 et d'écart type sigma, puis donne sa valeur absolue'''
+        '''Ajoute une valeur aléatoire venant d'une gaussienne de centre 0 et d'écart type sigma, puis donne sa valeur absolue'''
         return abs(base + rd.gauss(0, sigma))
         
     def dist(self,coo):
